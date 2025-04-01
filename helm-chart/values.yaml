@@ -1,0 +1,43 @@
+# Default values for my-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: <REPOSITORY_URI>  # Replace with the AWS ECR repository URL
+  backend: "${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend"
+  frontend: "${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend"
+  tag: "latest"  # Will be replaced by the build number dynamically from Jenkins
+
+backend:
+  replicaCount: 2
+  image:
+    repository: ${image.backend}
+    tag: "latest"  # Will be replaced with BUILD_NUMBER dynamically
+    pullPolicy: Always
+  service:
+    name: backend
+    type: ClusterIP
+    port: 8080
+  resources: {}
+  env:
+    - name: DATABASE_URL
+      value: "jdbc:mysql://my-database:3306/mydb"
+    - name: DATABASE_USERNAME
+      value: "root"
+    - name: DATABASE_PASSWORD
+      value: "password"
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: ${image.frontend}
+    tag: "latest"  # Will be replaced with BUILD_NUMBER dynamically
+    pullPolicy: Always
+  service:
+    name: frontend
+    type: ClusterIP
+    port: 80
+  resources: {}
+  env:
+    - name: API_URL
+      value: "http://backend:8080"
