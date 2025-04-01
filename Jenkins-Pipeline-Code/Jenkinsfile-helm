@@ -29,11 +29,20 @@ pipeline {
             steps {
                 dir('backend') {
                     withSonarQubeEnv('sonar-server') {
-                        sh ''' $SCANNER_HOME/bin/sonar-scanner \
+                        sh ''' 
+                        $SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.projectName=three-tier-backend \
                         -Dsonar.projectKey=three-tier-backend \
-			-Dsonar.projectName=three-tier-frontend \
-                        -Dsonar.projectKey=three-tier-frontend '''
+                        '''
+                    }
+                }
+                dir('client') {
+                    withSonarQubeEnv('sonar-server') {
+                        sh ''' 
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=three-tier-frontend \
+                        -Dsonar.projectKey=three-tier-frontend \
+                        '''
                     }
                 }
             }
@@ -48,17 +57,27 @@ pipeline {
         stage('Trivy File Scan') {
             steps {
                 dir('backend') {
-                    sh 'trivy fs . > trivyfs.txt'
+                    sh 'trivy fs . > trivyfs-backend.txt'
+                }
+                dir('client') {
+                    sh 'trivy fs . > trivyfs-frontend.txt'
                 }
             }
         }
         stage("Docker Image Build") {
             steps {
                 script {
+                    // Backend Docker build
                     dir('backend') {
                         sh 'docker system prune -f'
                         sh 'docker container prune -f'
-                        sh 'docker build -t ${AWS_ECR_REPO_NAME} .'
+                        sh 'docker build -t ${AWS_ECR_REPO_NAME}-backend .'
+                    }
+                    // Frontend Docker build
+                    dir('client') {
+                        sh 'docker system prune -f'
+                        sh 'docker container prune -f'
+                        sh 'docker build -t ${AWS_ECR_REPO_NAME}-frontend .'
                     }
                 }
             }
@@ -66,22 +85,37 @@ pipeline {
         stage("ECR Image Pushing") {
             steps {
                 script {
+                    // Log in to AWS ECR
                     sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI}'
-                    sh 'docker tag ${AWS_ECR_REPO_NAME} ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}:${BUILD_NUMBER}'
+
+                    // Backend image tagging and pushing
+                    sh 'docker tag ${AWS_ECR_REPO_NAME}-backend ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend:${BUILD_NUMBER}'
+
+                    // Frontend image tagging and pushing
+                    sh 'docker tag ${AWS_ECR_REPO_NAME}-frontend ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend:${BUILD_NUMBER}'
                 }
             }
         }
         stage("TRIVY Image Scan") {
             steps {
-                sh 'trivy image ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}:${BUILD_NUMBER} > trivyimage.txt' 
+                // Backend image scan
+                sh 'trivy image ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend:${BUILD_NUMBER} > trivyimage-backend.txt'
+                
+                // Frontend image scan
+                sh 'trivy image ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend:${BUILD_NUMBER} > trivyimage-frontend.txt' 
             }
         }
         stage('Update Helm Values') {
             steps {
                 dir('helm-chart') {
                     sh '''
-                    sed -i "s|image:.*|image: $REPOSITORY_URI$AWS_ECR_REPO_NAME:$BUILD_NUMBER|g" values.yaml
+                    # Update backend image in Helm values.yaml
+                    sed -i "s|image:.*backend.*|image: $REPOSITORY_URI$AWS_ECR_REPO_NAME-backend:$BUILD_NUMBER|g" values.yaml
+                    
+                    # Update frontend image in Helm values.yaml
+                    sed -i "s|image:.*frontend.*|image: $REPOSITORY_URI$AWS_ECR_REPO_NAME-frontend:$BUILD_NUMBER|g" values.yaml
                     '''
                 }
             }
@@ -106,4 +140,3 @@ pipeline {
         }
     }
 }
- 
