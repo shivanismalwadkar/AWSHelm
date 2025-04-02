@@ -6,6 +6,10 @@ pipeline {
     }
     environment  {
         SCANNER_HOME = tool 'sonar-scanner'
+        DB_USERNAME = credentials('RDS_USERNAME')
+        DB_PASSWORD = credentials('RDS_PASSWORD')
+        DB_URL = "jdbc:mysql://${credentials('RDS_ENDPOINT')}:3306/book-rds"
+        REPOSITORY_URI = credentials('ECR_URI')
         AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
         AWS_ECR_REPO_NAME = credentials('ECR_REPO2')
         AWS_DEFAULT_REGION = 'us-east-1'
@@ -116,6 +120,10 @@ pipeline {
                     
                     # Update frontend image in Helm values.yaml
                     sed -i "s|image:.*frontend.*|image: $REPOSITORY_URI$AWS_ECR_REPO_NAME-frontend:$BUILD_NUMBER|g" values.yaml
+
+                    sed -i 's|DATABASE_URL:.*|DATABASE_URL: ${DB_URL}|g' helm-chart/values.yaml
+                    sed -i 's|DATABASE_USERNAME:.*|DATABASE_USERNAME: ${DB_USERNAME}|g' helm-chart/values.yaml
+                    sed -i 's|DATABASE_PASSWORD:.*|DATABASE_PASSWORD: ${DB_PASSWORD}|g' helm-chart/values.yaml
                     '''
                 }
             }
@@ -133,7 +141,11 @@ pipeline {
                     aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER}
 
                     # Deploy using Helm
-                    helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} --set image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME},image.tag=${BUILD_NUMBER}
+                    helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
+  --set backend.image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend \
+  --set backend.image.tag=${BUILD_NUMBER} \
+  --set frontend.image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend \
+  --set frontend.image.tag=${BUILD_NUMBER}
                     '''
                 }
             }
