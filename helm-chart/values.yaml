@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: <REPOSITORY_URI>  # Replace with the AWS ECR repository URL
+  repository: 551642657440.dkr.ecr.us-east-1.amazonaws.com/awshelm  # Replace with the AWS ECR repository URL
   backend: "${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend"
   frontend: "${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend"
   tag: "latest"  # Will be replaced by the build number dynamically from Jenkins
@@ -21,11 +21,11 @@ backend:
   resources: {}
   env:
     - name: DATABASE_URL
-      value: "jdbc:mysql://my-database:3306/mydb"
+      value: "jdbc:mysql://${credentials('RDS_ENDPOINT')}:3306/book-rds"
     - name: DATABASE_USERNAME
-      value: "root"
+      value: ""
     - name: DATABASE_PASSWORD
-      value: "password"
+      value: ""
 
 frontend:
   replicaCount: 2
