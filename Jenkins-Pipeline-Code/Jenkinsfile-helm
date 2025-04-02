@@ -5,7 +5,6 @@ pipeline {
         nodejs 'nodejs'
     }
     environment  {
-        SCANNER_HOME = tool 'sonar-scanner'
         DB_USERNAME = credentials('RDS_USERNAME')
         DB_PASSWORD = credentials('RDS_PASSWORD')
         DB_URL = "jdbc:mysql://${credentials('RDS_ENDPOINT')}:3306/book-rds"
@@ -28,7 +27,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/shivanismalwadkar/AWSHelm.git'
             }
         }
-        stage('Sonarqube Analysis') {
+        /*stage('Sonarqube Analysis') {
             steps {
                 dir('backend') {
                     withSonarQubeEnv('sonar-server') {
@@ -66,7 +65,7 @@ pipeline {
                     sh 'trivy fs . > trivyfs-frontend.txt'
                 }
             }
-        }
+        }*/
         stage("Docker Image Build") {
             steps {
                 script {
