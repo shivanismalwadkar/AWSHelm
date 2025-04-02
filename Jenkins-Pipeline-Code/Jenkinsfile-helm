@@ -24,7 +24,7 @@ pipeline {
         }
         stage('Checkout from Git') {
             steps {
-                git branch: 'main', url: 'https://github.com/shivanismalwadkar/AWSHelm.git'
+                git branch: 'master', url: 'https://github.com/shivanismalwadkar/AWSHelm.git'
             }
         }
         /*stage('Sonarqube Analysis') {
