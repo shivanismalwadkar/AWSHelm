@@ -13,7 +13,6 @@ pipeline {
         AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
         AWS_ECR_REPO_NAME = credentials('ECR_REPO2')
         AWS_DEFAULT_REGION = 'us-east-1'
-        REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/"
         EKS_CLUSTER = 'my-eks-cluster'
         HELM_RELEASE = 'my-app'
         HELM_CHART_PATH = './helm-chart'
