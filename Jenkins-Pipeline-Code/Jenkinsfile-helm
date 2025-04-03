@@ -113,15 +113,13 @@ pipeline {
             steps {
                 dir('helm-chart') {
                     sh '''
-                    # Update backend image in Helm values.yaml
-                    sed -i "s|image:.*backend.*|image: $REPOSITORY_URI$AWS_ECR_REPO_NAME-backend:$BUILD_NUMBER|g" values.yaml
-                    
-                    # Update frontend image in Helm values.yaml
-                    sed -i "s|image:.*frontend.*|image: $REPOSITORY_URI$AWS_ECR_REPO_NAME-frontend:$BUILD_NUMBER|g" values.yaml
+                    # Update image versions
+                    sed -i "s|tag:.*|tag: ${BUILD_NUMBER}|g" values.yaml
 
-                    sed -i 's|DATABASE_URL:.*|DATABASE_URL: ${DB_URL}|g' helm-chart/values.yaml
-                    sed -i 's|DATABASE_USERNAME:.*|DATABASE_USERNAME: ${DB_USERNAME}|g' helm-chart/values.yaml
-                    sed -i 's|DATABASE_PASSWORD:.*|DATABASE_PASSWORD: ${DB_PASSWORD}|g' helm-chart/values.yaml
+                    # Update DB credentials
+                    sed -i "s|value:.*DATABASE_URL.*|value: \\"jdbc:mysql://${DB_URL}:3306/book-rds\\"|g" values.yaml
+                    sed -i "s|value:.*DATABASE_USERNAME.*|value: \\"${DB_USERNAME}\\"|g" values.yaml
+                    sed -i "s|value:.*DATABASE_PASSWORD.*|value: \\"${DB_PASSWORD}\\"|g" values.yaml
                     '''
                 }
             }
@@ -140,10 +138,13 @@ pipeline {
 
                     # Deploy using Helm
                     helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
-  --set backend.image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend \
-  --set backend.image.tag=${BUILD_NUMBER} \
-  --set frontend.image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend \
-  --set frontend.image.tag=${BUILD_NUMBER}
+                      --set backend.image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend \
+                      --set backend.image.tag=${BUILD_NUMBER} \
+                      --set frontend.image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend \
+                      --set frontend.image.tag=${BUILD_NUMBER} \
+                      --set database.host=${DB_URL} \
+                      --set database.username=${DB_USERNAME} \
+                      --set database.password=${DB_PASSWORD}
                     '''
                 }
             }
