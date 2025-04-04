@@ -143,10 +143,10 @@ pipeline {
 
                     # Deploy using Helm
                     helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
-                      --set backend.image.repository=${REPOSITORY_URI_FRONTEND} \
-                      --set backend.image.tag=${BUILD_NUMBER} \
-                      --set frontend.image.repository=${REPOSITORY_URI_FRONTEND} \
-                      --set frontend.image.tag=${BUILD_NUMBER} \
+                      --set image.backend.repository=${REPOSITORY_URI_BACKEND} \
+                      --set image.frontend.tag=${BUILD_NUMBER} \
+                      --set image.frontend.repository=${REPOSITORY_URI_FRONTEND} \
+                      --set image.frontend.tag=${BUILD_NUMBER} \
                       --set database.host=${DB_URL} \
                       --set database.username=${DB_USERNAME} \
                       --set database.password=${DB_PASSWORD}
