@@ -92,11 +92,11 @@ pipeline {
 
                     // Backend image tagging and pushing
                     sh 'docker tag image-backend ${REPOSITORY_URI}image-backend:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI}image-backend:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI}'
 
                     // Frontend image tagging and pushing
                     sh 'docker tag image-frontend ${REPOSITORY_URI}image-frontend:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI}image-frontend:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI}'
                 }
             }
         }
