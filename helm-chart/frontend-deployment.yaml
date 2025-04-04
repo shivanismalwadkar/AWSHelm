@@ -19,15 +19,20 @@ spec:
       containers:
         - name: frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: Always
           ports:
             - containerPort: {{ .Values.frontend.service.port }}
           env:
+            {{- if .Values.frontend.env }}
             {{- range .Values.frontend.env }}
-            - name: {{ .name }}
-              value: {{ .value }}
+            - name: "{{ .name }}"
+              value: "{{ .value }}"
+            {{- end }}
             {{- end }}
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
+      imagePullSecrets:
+        - name: ecr-secret  # Ensure this secret exists if using private ECR
 ---
 apiVersion: v1
 kind: Service
