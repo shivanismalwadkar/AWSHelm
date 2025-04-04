@@ -10,7 +10,7 @@ pipeline {
         DB_URL = "jdbc:mysql://${credentials('RDS_ENDPOINT')}:3306/book-rds"
         REPOSITORY_URI = credentials('ECR_URI')
         AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
-        AWS_ECR_REPO_NAME = credentials('ECR_REPO2')
+        AWS_ECR_REPO_NAME = credentials('ECR_REPO')
         AWS_DEFAULT_REGION = 'us-east-1'
         EKS_CLUSTER = 'my-eks-cluster'
         HELM_RELEASE = 'my-app'
