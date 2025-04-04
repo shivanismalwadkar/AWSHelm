@@ -14,7 +14,7 @@ pipeline {
         AWS_ECR_REPO_NAME_BACKEND = credentials('ECR_REPO_BACKEND')
         AWS_ECR_REPO_NAME_FRONTEND = credentials('ECR_REPO_FRONTEND')
         AWS_DEFAULT_REGION = 'us-east-1'
-        EKS_CLUSTER = 'my-eks-cluster'
+        EKS_CLUSTER = 'project-eks'
         HELM_RELEASE = 'my-app'
         HELM_CHART_PATH = './helm-chart'
     }
