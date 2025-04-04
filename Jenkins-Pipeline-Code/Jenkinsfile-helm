@@ -91,12 +91,12 @@ pipeline {
                     sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI}'
 
                     // Backend image tagging and pushing
-                    sh 'docker tag image-backend ${REPOSITORY_URI}/image-backend:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI}/image-backend:${BUILD_NUMBER}'
+                    sh 'docker tag image-backend ${REPOSITORY_URI}image-backend:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI}image-backend:${BUILD_NUMBER}'
 
                     // Frontend image tagging and pushing
-                    sh 'docker tag image-frontend ${REPOSITORY_URI}/image-frontend:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI}/image-frontend:${BUILD_NUMBER}'
+                    sh 'docker tag image-frontend ${REPOSITORY_URI}image-frontend:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI}image-frontend:${BUILD_NUMBER}'
                 }
             }
         }
