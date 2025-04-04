@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx  # Ensure your Ingress Controller recognizes this
   rules:
-  - host: myapp.example.com  # Replace with your actual domain
+  - host: aws-helm-shivani.com  # Replace with your actual domain
     http:
       paths:
       - path: /frontend(/|$)(.*)
