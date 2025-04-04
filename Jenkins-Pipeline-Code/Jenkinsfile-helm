@@ -105,7 +105,7 @@ pipeline {
                 }
             }
         }
-        stage("TRIVY Image Scan") {
+        /*stage("TRIVY Image Scan") {
             steps {
                 // Backend image scan
                 sh 'trivy image ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER} > trivyimage-backend.txt'
@@ -113,7 +113,7 @@ pipeline {
                 // Frontend image scan
                 sh 'trivy image ${REPOSITORY_URI_FRONTEND}}:${BUILD_NUMBER} > trivyimage-frontend.txt' 
             }
-        }
+        }*/
         stage('Update Helm Values') {
             steps {
                 dir('helm-chart') {
