@@ -1,13 +1,19 @@
 image:
-  repository: 551642657440.dkr.ecr.us-east-1.amazonaws.com/awshelm
-  tag: "{{ .Values.buildNumber }}"  # Replaced dynamically in Jenkins
+  backend:
+    repository: "551642657440.dkr.ecr.us-east-1.amazonaws.com/image-backend"
+    tag: "{{ .Values.buildNumber }}"
+    pullPolicy: Always
+  frontend:
+    repository: "551642657440.dkr.ecr.us-east-1.amazonaws.com/image-frontend"
+    tag: "{{ .Values.buildNumber }}"
+    pullPolicy: Always
 
 backend:
   replicaCount: 2
   image:
-    repository: "{{ .Values.image.repository }}-backend"
-    tag: "{{ .Values.image.tag }}"
-    pullPolicy: Always
+    repository: "{{ .Values.image.backend.repository }}"
+    tag: "{{ .Values.image.backend.tag }}"
+    pullPolicy: "{{ .Values.image.backend.pullPolicy }}"
   service:
     name: backend
     type: ClusterIP
@@ -23,9 +29,9 @@ backend:
 frontend:
   replicaCount: 2
   image:
-    repository: "{{ .Values.image.repository }}-frontend"
-    tag: "{{ .Values.image.tag }}"
-    pullPolicy: Always
+    repository: "{{ .Values.image.frontend.repository }}"
+    tag: "{{ .Values.image.frontend.tag }}"
+    pullPolicy: "{{ .Values.image.frontend.pullPolicy }}"
   service:
     name: frontend
     type: ClusterIP
