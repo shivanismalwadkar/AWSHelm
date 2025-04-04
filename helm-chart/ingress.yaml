@@ -3,22 +3,23 @@ kind: Ingress
 metadata:
   name: my-app-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    kubernetes.io/ingress.class: "alb"  # Use ALB instead of NGINX
+    alb.ingress.kubernetes.io/scheme: "internet-facing"  # Expose ALB to the internet
+    alb.ingress.kubernetes.io/target-type: "ip"  # Targets pods directly
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'  # Open HTTP port
 spec:
-  ingressClassName: nginx  # Ensure your Ingress Controller recognizes this
   rules:
   - host: aws-helm-shivani.com  # Replace with your actual domain
     http:
       paths:
-      - path: /frontend(/|$)(.*)
+      - path: /frontend
         pathType: Prefix
         backend:
           service:
             name: frontend
             port:
               number: 80
-      - path: /backend(/|$)(.*)
+      - path: /backend
         pathType: Prefix
         backend:
           service:
