@@ -4,19 +4,21 @@ metadata:
   name: my-app-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
+  ingressClassName: nginx  # Ensure your Ingress Controller recognizes this
   rules:
-  - host: <your-application-domain> # e.g., frontend.myapp.com
+  - host: myapp.example.com  # Replace with your actual domain
     http:
       paths:
-      - path: /frontend
+      - path: /frontend(/|$)(.*)
         pathType: Prefix
         backend:
           service:
             name: frontend
             port:
               number: 80
-      - path: /backend
+      - path: /backend(/|$)(.*)
         pathType: Prefix
         backend:
           service:
