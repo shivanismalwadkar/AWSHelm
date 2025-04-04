@@ -93,15 +93,15 @@ pipeline {
                     sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI_BACKEND}'
 
                     // Backend image tagging and pushing
-                    sh 'docker tag ${AWS_ECR_REPO_NAME_BACKEND} ${REPOSITORY_URI_BACKEND}${AWS_ECR_REPO_NAME_BACKEND}:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI_BACKEND}${AWS_ECR_REPO_NAME_BACKEND}:${BUILD_NUMBER}'
+                    sh 'docker tag ${AWS_ECR_REPO_NAME_BACKEND} ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}'
 
                     // Log in to AWS ECR FRONTEND
                     sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI_FRONTEND}'
 
                     // Frontend image tagging and pushing
-                    sh 'docker tag ${AWS_ECR_REPO_NAME_FRONTEND} ${REPOSITORY_URI_FRONTEND}${AWS_ECR_REPO_NAME}:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI_FRONTEND}${AWS_ECR_REPO_NAME_FRONTEND}:${BUILD_NUMBER}'
+                    sh 'docker tag ${AWS_ECR_REPO_NAME_FRONTEND} ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}'
                 }
             }
         }
