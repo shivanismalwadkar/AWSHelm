@@ -142,6 +142,7 @@ pipeline {
                     aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER}
 
                     # Deploy using Helm
+                    cd /var/lib/jenkins/workspace/helm-deployment
                     helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
                       --set image.backend.repository=${REPOSITORY_URI_BACKEND} \
                       --set image.frontend.tag=${BUILD_NUMBER} \
