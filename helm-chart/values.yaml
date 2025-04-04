@@ -1,11 +1,11 @@
 image:
   backend:
-    repository: "551642657440.dkr.ecr.us-east-1.amazonaws.com/image-backend"
-    tag: "latest"
+    repository: ""
+    tag: ""
     pullPolicy: Always
   frontend:
-    repository: "551642657440.dkr.ecr.us-east-1.amazonaws.com/image-frontend"
-    tag: "latest"
+    repository: ""
+    tag: ""
     pullPolicy: Always
 
 backend:
