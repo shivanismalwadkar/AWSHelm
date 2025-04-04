@@ -73,13 +73,13 @@ pipeline {
                     dir('backend') {
                         sh 'docker system prune -f'
                         sh 'docker container prune -f'
-                        sh 'docker build -t ${AWS_ECR_REPO_NAME}-backend .'
+                        sh 'docker build -t image-backend .'
                     }
                     // Frontend Docker build
                     dir('client') {
                         sh 'docker system prune -f'
                         sh 'docker container prune -f'
-                        sh 'docker build -t ${AWS_ECR_REPO_NAME}-frontend .'
+                        sh 'docker build -t image-frontend .'
                     }
                 }
             }
@@ -88,25 +88,25 @@ pipeline {
             steps {
                 script {
                     // Log in to AWS ECR
-                    sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}'
+                    sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI}'
 
                     // Backend image tagging and pushing
-                    sh 'docker tag ${AWS_ECR_REPO_NAME}-backend ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend:${BUILD_NUMBER}'
+                    sh 'docker tag image-backend ${REPOSITORY_URI}/image-backend:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI}/image-backend:${BUILD_NUMBER}'
 
                     // Frontend image tagging and pushing
-                    sh 'docker tag ${AWS_ECR_REPO_NAME}-frontend ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend:${BUILD_NUMBER}'
-                    sh 'docker push ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend:${BUILD_NUMBER}'
+                    sh 'docker tag image-frontend ${REPOSITORY_URI}/image-frontend:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI}/image-frontend:${BUILD_NUMBER}'
                 }
             }
         }
         stage("TRIVY Image Scan") {
             steps {
                 // Backend image scan
-                sh 'trivy image ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend:${BUILD_NUMBER} > trivyimage-backend.txt'
+                sh 'trivy image ${REPOSITORY_URI}/image-backend:${BUILD_NUMBER} > trivyimage-backend.txt'
                 
                 // Frontend image scan
-                sh 'trivy image ${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend:${BUILD_NUMBER} > trivyimage-frontend.txt' 
+                sh 'trivy image ${REPOSITORY_URI}/image-frontend:${BUILD_NUMBER} > trivyimage-frontend.txt' 
             }
         }
         stage('Update Helm Values') {
@@ -138,9 +138,9 @@ pipeline {
 
                     # Deploy using Helm
                     helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
-                      --set backend.image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-backend \
+                      --set backend.image.repository=${REPOSITORY_URI}/image-backend \
                       --set backend.image.tag=${BUILD_NUMBER} \
-                      --set frontend.image.repository=${REPOSITORY_URI}${AWS_ECR_REPO_NAME}-frontend \
+                      --set frontend.image.repository=${REPOSITORY_URI}/image-frontend \
                       --set frontend.image.tag=${BUILD_NUMBER} \
                       --set database.host=${DB_URL} \
                       --set database.username=${DB_USERNAME} \
