@@ -19,15 +19,20 @@ spec:
       containers:
         - name: backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: Always
           ports:
             - containerPort: {{ .Values.backend.service.port }}
           env:
+            {{- if .Values.backend.env }}
             {{- range .Values.backend.env }}
-            - name: {{ .name }}
-              value: {{ .value }}
+            - name: "{{ .name }}"
+              value: "{{ .value }}"
+            {{- end }}
             {{- end }}
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
+      imagePullSecrets:
+        - name: ecr-secret  # Ensure this secret exists if using private ECR
 ---
 apiVersion: v1
 kind: Service
