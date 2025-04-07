@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Checkout from Git') {
             steps {
-                git branch: 'master', url: 'https://github.com/shivanismalwadkar/AWSHelm.git'
+                git branch: 'master', url: 'http://github.com/shivanismalwadkar/AWSHelm.git'
             }
         }
 
