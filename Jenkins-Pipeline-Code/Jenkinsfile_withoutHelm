@@ -7,6 +7,7 @@ pipeline {
     environment  {
         DB_USERNAME = credentials('RDS_USERNAME')
         DB_PASSWORD = credentials('RDS_PASSWORD')
+        GIT_CREDENTIALS = credentials('github-creds')
         DB_URL = "jdbc:mysql://${credentials('RDS_ENDPOINT')}:3306/book-rds"
         REPOSITORY_URI_BACKEND = credentials('ECR_URI_BACKEND')
         REPOSITORY_URI_FRONTEND = credentials('ECR_URI_FRONTEND')
@@ -77,20 +78,26 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 dir('kubernetes-files') {
+                    withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                     sh '''
                     sed -i "s#image:.*#image: ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}#g" backend-deployment.yaml
                     sed -i "s#image:.*#image: ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}#g" frontend-deploy-service.yaml
                     sed -i "s#__TAG__#${BUILD_NUMBER}#g" backend-deployment.yaml
                     sed -i "s#__TAG__#${BUILD_NUMBER}#g" frontend-deploy-service.yaml
 
+                    git config user.name "$GIT_USERNAME"
+                    git config user.email "$GIT_USERNAME@gmail.com"
+
                     git add .
                     git commit -m "Update deployment Image to version ${BUILD_NUMBER}"
-                    git push origin master
+
+                    git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/shivanismalwadkar/AWSHelm.git
 
                     aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER}
                     kubectl apply -f backend-deployment.yaml
                     kubectl apply -f frontend-deploy-service.yaml
                     '''
+}
                 }
             }
         }
