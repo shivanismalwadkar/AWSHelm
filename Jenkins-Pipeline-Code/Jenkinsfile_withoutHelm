@@ -1,0 +1,147 @@
+pipeline {
+    agent any 
+    tools {
+        jdk 'jdk'
+        nodejs 'nodejs'
+    }
+    environment  {
+        DB_USERNAME = credentials('RDS_USERNAME')
+        DB_PASSWORD = credentials('RDS_PASSWORD')
+        DB_URL = "jdbc:mysql://${credentials('RDS_ENDPOINT')}:3306/book-rds"
+        REPOSITORY_URI_BACKEND = credentials('ECR_URI_BACKEND')
+        REPOSITORY_URI_FRONTEND = credentials('ECR_URI_FRONTEND')
+        AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
+        AWS_ECR_REPO_NAME_BACKEND = credentials('ECR_REPO_BACKEND')
+        AWS_ECR_REPO_NAME_FRONTEND = credentials('ECR_REPO_FRONTEND')
+        AWS_DEFAULT_REGION = 'us-east-1'
+        EKS_CLUSTER = 'project-eks'
+        HELM_RELEASE = 'my-app'
+        HELM_CHART_PATH = './helm-chart'
+    }
+    stages {
+        stage('Cleaning Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Checkout from Git') {
+            steps {
+                git branch: 'master', url: 'https://github.com/shivanismalwadkar/AWSHelm.git'
+            }
+        }
+        /*stage('Sonarqube Analysis') {
+            steps {
+                dir('backend') {
+                    withSonarQubeEnv('sonar-server') {
+                        sh ''' 
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=three-tier-backend \
+                        -Dsonar.projectKey=three-tier-backend \
+                        '''
+                    }
+                }
+                dir('client') {
+                    withSonarQubeEnv('sonar-server') {
+                        sh ''' 
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=three-tier-frontend \
+                        -Dsonar.projectKey=three-tier-frontend \
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Quality Check') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                }
+            }
+        }
+        stage('Trivy File Scan') {
+            steps {
+                dir('backend') {
+                    sh 'trivy fs . > trivyfs-backend.txt'
+                }
+                dir('client') {
+                    sh 'trivy fs . > trivyfs-frontend.txt'
+                }
+            }
+        }*/
+        stage("Docker Image Build") {
+            steps {
+                script {
+                    // Backend Docker build
+                    dir('backend') {
+                        sh 'docker system prune -f'
+                        sh 'docker container prune -f'
+                        sh 'docker build -t ${AWS_ECR_REPO_NAME_BACKEND} .'
+                    }
+                    // Frontend Docker build
+                    dir('client') {
+                        sh 'docker system prune -f'
+                        sh 'docker container prune -f'
+                        sh 'docker build -t ${AWS_ECR_REPO_NAME_FRONTEND} .'
+                    }
+                }
+            }
+        }
+        stage("ECR Image Pushing") {
+            steps {
+                script {
+                    // Log in to AWS ECR BACKEND
+                    sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI_BACKEND}'
+
+                    // Backend image tagging and pushing
+                    sh 'docker tag ${AWS_ECR_REPO_NAME_BACKEND} ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}'
+
+                    // Log in to AWS ECR FRONTEND
+                    sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI_FRONTEND}'
+
+                    // Frontend image tagging and pushing
+                    sh 'docker tag ${AWS_ECR_REPO_NAME_FRONTEND} ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}'
+                    sh 'docker push ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}'
+                }
+            }
+        }
+        /*stage("TRIVY Image Scan") {
+            steps {
+                // Backend image scan
+                sh 'trivy image ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER} > trivyimage-backend.txt'
+                
+                // Frontend image scan
+                sh 'trivy image ${REPOSITORY_URI_FRONTEND}}:${BUILD_NUMBER} > trivyimage-frontend.txt' 
+            }
+        }*/
+        stage('Update Helm Values') {
+            steps {
+                dir('helm-chart') {
+                    sh '''
+                    # Update image versions
+                    sed -i "s|tag:.*|tag: ${BUILD_NUMBER}|g" values.yaml
+
+                    # Update DB credentials
+                    sed -i "s|value:.*DATABASE_URL.*|value: \\"jdbc:mysql://${DB_URL}:3306/book-rds\\"|g" values.yaml
+                    sed -i "s|value:.*DATABASE_USERNAME.*|value: \\"${DB_USERNAME}\\"|g" values.yaml
+                    sed -i "s|value:.*DATABASE_PASSWORD.*|value: \\"${DB_PASSWORD}\\"|g" values.yaml
+                    '''
+                }
+            }
+        }
+        steps {
+                dir('kubernetes-files') {
+                        sh '''
+                            BUILD_NUMBER=${BUILD_NUMBER}
+                            echo $BUILD_NUMBER
+                            sed -i "s#image:.*#image: ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}#g" backend-deployment.yaml
+                            sed -i "s#image:.*#image: ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}#g" frontend-deployment.yaml
+                            git add .
+                            git commit -m "Update deployment Image to version \${BUILD_NUMBER}"
+                            git push https://github.com/shivanismalwadkar/AWSHelm HEAD:master
+                        '''
+                    
+                }
+            }
+    }
+}
