@@ -136,9 +136,13 @@ pipeline {
                             echo $BUILD_NUMBER
                             sed -i "s#image:.*#image: ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}#g" backend-deployment.yaml
                             sed -i "s#image:.*#image: ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}#g" frontend-deployment.yaml
+                            sed -i "s#__TAG__#${BUILD_NUMBER}#g" backend-deployment.yaml
+                            sed -i "s#__TAG__#${BUILD_NUMBER}#g" frontend-deployment.yaml
+
                             git add .
                             git commit -m "Update deployment Image to version \${BUILD_NUMBER}"
                             git push https://github.com/shivanismalwadkar/AWSHelm HEAD:masteraws 
+
                             eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER}
                             kubectl apply -f backend-deployment.yaml
                             kubectl apply -f frontend-deployment.yaml
