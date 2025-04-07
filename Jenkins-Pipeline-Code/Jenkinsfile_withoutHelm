@@ -94,6 +94,11 @@ pipeline {
                     git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/shivanismalwadkar/AWSHelm.git
 
                     aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER}
+
+                    # Apply secrets and config
+                    kubectl apply -f secret.yaml
+                    kubectl apply -f db-config.yaml
+
                     kubectl delete deployment backend
                     kubectl apply -f backend-deployment.yaml
                     kubectl delete deployment frontend
