@@ -85,7 +85,7 @@ pipeline {
 
                     git add .
                     git commit -m "Update deployment Image to version ${BUILD_NUMBER}"
-                    git push https://github.com/shivanismalwadkar/AWSHelm HEAD:master
+                    git push origin master
 
                     aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER}
                     kubectl apply -f backend-deployment.yaml
