@@ -78,8 +78,8 @@ pipeline {
             steps {
                 dir('kubernetes-files') {
                     sh '''
-                    sed -i "s#image:.*#image: ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}#g" kubernetes-files/backend-deployment.yaml
-                    sed -i "s#image:.*#image: ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}#g" kubernetes-files/frontend-deploy-service.yaml
+                    sed -i "s#image:.*#image: ${REPOSITORY_URI_BACKEND}:${BUILD_NUMBER}#g" backend-deployment.yaml
+                    sed -i "s#image:.*#image: ${REPOSITORY_URI_FRONTEND}:${BUILD_NUMBER}#g" frontend-deploy-service.yaml
                     sed -i "s#__TAG__#${BUILD_NUMBER}#g" backend-deployment.yaml
                     sed -i "s#__TAG__#${BUILD_NUMBER}#g" frontend-deployment.yaml
 
