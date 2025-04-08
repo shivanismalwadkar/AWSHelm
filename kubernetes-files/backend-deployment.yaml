@@ -18,7 +18,7 @@ spec:
       - name: backend
         image: 551642657440.dkr.ecr.us-east-1.amazonaws.com/image-backend:__TAG__
         ports:
-        - containerPort: 80
+        - containerPort: 3000
         env:
         - name: DB_HOST
           valueFrom:
@@ -53,11 +53,12 @@ kind: Service
 metadata:
   name: backend
 spec:
-  ports:
-  - port: 80
-    targetPort: 3000
-    protocol: TCP
-      #nodePort: 31005  # Optional: Specify a #nodePort if you want a fixed port
   selector:
-    app: backend  # Ensure this matches the labels in the Deployment
-  type: LoadBalancer          
+    app: backend  # This matches the label in your deployment
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+       
