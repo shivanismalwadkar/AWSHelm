@@ -98,6 +98,7 @@ pipeline {
                     # Apply secrets and config
                     kubectl apply -f secret.yaml
                     kubectl apply -f configmap.yaml
+                    kubectl apply -f backend-service.yaml
 
                     kubectl delete deployment backend
                     kubectl apply -f backend-deployment.yaml
