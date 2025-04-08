@@ -46,7 +46,7 @@ spec:
               name: db-secret
               key: db_password
         - name: PORT
-          value: "3306"  # Adjust if needed
+          value: "3000"  # Backend is exposing 3000
 ---
 apiVersion: v1
 kind: Service
