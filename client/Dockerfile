@@ -1,5 +1,8 @@
 FROM node:18 AS build
 
+# Install curl
+RUN apt-get update && apt-get install -y curl
+
 # Set the working directory
 WORKDIR /app
 
