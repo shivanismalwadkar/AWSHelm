@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+\apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
@@ -46,7 +46,7 @@ spec:
               name: db-secret
               key: db_password
         - name: PORT
-          value: "3306"  # Adjust if necessary
+          value: "3306"  # Adjust if needed
 ---
 apiVersion: v1
 kind: Service
@@ -54,11 +54,10 @@ metadata:
   name: backend
 spec:
   selector:
-    app: backend  # This matches the label in your deployment
+    app: backend
   type: LoadBalancer
   ports:
     - name: http
       port: 80
       targetPort: 3000
       protocol: TCP
-       
