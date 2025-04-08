@@ -99,7 +99,7 @@ pipeline {
                     kubectl apply -f secret.yaml
                     kubectl apply -f configmap.yaml
 
-                    # kubectl delete deployment backend
+                    kubectl delete deployment backend
                     kubectl apply -f backend-deployment.yaml
                     kubectl delete deployment frontend
                     kubectl apply -f frontend-deploy-service.yaml
