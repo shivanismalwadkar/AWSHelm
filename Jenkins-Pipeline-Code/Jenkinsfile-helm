@@ -7,7 +7,7 @@ pipeline {
     environment  {
         DB_USERNAME = credentials('RDS_USERNAME')
         DB_PASSWORD = credentials('RDS_PASSWORD')
-        DB_URL = "jdbc:mysql://${credentials('RDS_ENDPOINT')}:3306/book-rds"
+        DB_URL = credentials('RDS_ENDPOINT')
         REPOSITORY_URI_BACKEND = credentials('ECR_URI_BACKEND')
         REPOSITORY_URI_FRONTEND = credentials('ECR_URI_FRONTEND')
         AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
